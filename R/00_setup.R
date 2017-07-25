@@ -24,14 +24,22 @@ library(stringr) # version 1.2.0
 
 # generic function to convert labeled object to factor --------------------
 lab2factor = function(data, colname, ordered = FALSE) {
-  dict = data.frame(level = attr(data[[colname]], 'labels')) 
-  dict  = dict %>% 
-    mutate(label = row.names(dict))
+  dict = data.frame(level = attr(data[[colname]], 'labels'),
+                    label = names(attr(data[[colname]], 'labels')))
   
   data[[colname]] =  factor(data[[colname]],
                            levels = dict$level, 
                            labels = dict$label,
                            ordered = ordered)
+  
+  return(data)
+}
+
+lab2char = function(data, colname, ordered = FALSE) {
+  dict = data.frame(level = attr(data[[colname]], 'labels'),
+                    label = names(attr(data[[colname]], 'labels')))
+  
+  data[[colname]] = as.character(plyr::mapvalues(data[[colname]], from = dict$level, to = dict$label))
   
   return(data)
 }
