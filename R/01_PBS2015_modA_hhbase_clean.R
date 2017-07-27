@@ -23,6 +23,8 @@ hh = hh %>%
          language = a14,
          ethnic = a15) %>% 
   # factorize
+  # Note: hh_type classifies hh into FTF or non-FTF; however, there were 2 stages of FTF hh identification:
+  # https://feedthefuture.gov/sites/default/files/resource/files/Bangladesh_Feed_the_Future_Baseline_Country_Report_English.pdf
   lab2factor('hh_type') %>% 
   lab2factor('religion') %>% 
   lab2factor('language') %>% 
