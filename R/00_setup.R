@@ -20,6 +20,7 @@ library(forcats) # version 0.2.0
 library(ggplot2) # version 2.2.1.9000
 library(sf) # version 0.5-1
 library(stringr) # version 1.2.0
+library(readxl) # version 1.1.0
 
 
 # generic function to convert labeled object to factor --------------------
@@ -42,5 +43,11 @@ lab2char = function(data, colname, ordered = FALSE) {
   data[[colname]] = as.character(plyr::mapvalues(data[[colname]], from = dict$level, to = dict$label))
   
   return(data)
+}
+
+
+# clean up stringed data --------------------------------------------------
+clean_string = function(string) {
+  str_trim(str_to_lower(str_replace_all(string, '  ', ' ')))
 }
 
