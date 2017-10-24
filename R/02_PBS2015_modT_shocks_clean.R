@@ -12,18 +12,18 @@
 # 1. Import data, rename to meaningful variables
 # 2. Classify shocks into different types (ag, medical, etc.)
 # 3. Roll up to the household level
-# 4.  Merge w/ hh base
+# 4.  Merge w/ hh base (incl. lat/lon)
 
 
-# DECISIONS TO MAKE -------------------------------------------------------
+# ASSUMPTIONS -------------------------------------------------------
 # • Include all shocks, or only most severe?
 # • Inlude all shocks, or only ones after 2012?
 
 
 
 # setup -------------------------------------------------------------------
-
 source('00_setup.R')
+source('01_PBS2015_modA_hhbase_clean.R')
 
 # import data -------------------------------------------------------------
 shk_raw = read_dta(paste0(pbs_dir, '050_r2_mod_t1_male.dta'))
@@ -90,6 +90,9 @@ qplot(data = shk, x = shk_year)
 # counted based on the number of categories of shocks
 hh_shk = shk %>% 
   
+  # filter out only shocks after 2012:
+  filter(year > 2012) %>% 
+  
   # group by hh id and the shock category
   group_by(a01, cause_cat) %>% 
   # count number of shocks
@@ -108,13 +111,20 @@ hh_shk = shk %>%
   select(a01, contains ('shk'))
 
 
+# [4] merge to hh base ----------------------------------------------------
+
+hh = hh %>% 
+  left_join(hh_shk, by = 'a01')
+
+
 # Frequency of shocks -----------------------------------------------------
 # quick bar graph of frequency of shock in a given hh
 
-hh_shk %>% 
-  gather(shk_cat, num_shocks, -a01) %>% 
+hh %>%
+  select(a01, div_name, contains('shk')) %>% 
+  gather(shk_cat, num_shocks, -a01, -div_name) %>% 
   mutate(shocked = num_shocks > 0) %>% 
-  group_by(shk_cat) %>% 
+  group_by(shk_cat, div_name) %>% 
   summarise(n_shk = sum(shocked),
             n = n(),
             pct_shk = n_shk/n) %>% 
@@ -124,6 +134,8 @@ hh_shk %>%
   
   scale_fill_brewer(palette = 'Pastel1', direction = -1) +
   scale_y_reverse(labels = scales::percent, name = 'percent of households experiencing a shock') +
+  
+  facet_wrap(~ div_name) +
   
   coord_flip() +
   theme_minimal() + 
